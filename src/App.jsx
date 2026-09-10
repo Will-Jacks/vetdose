@@ -183,7 +183,7 @@ function App() {
             <p className="hero-description">
               Encontre informações farmacológicas e calcule doses com clareza
               <br className="desktop-break" />
-              durante sua rotina clínica.
+              &nbsp;durante sua rotina clínica.
             </p>
 
             <div className="search-box">
