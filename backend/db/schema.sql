@@ -1,0 +1,51 @@
+CREATE TABLE IF NOT EXISTS especie (
+  id BIGINT AUTO_INCREMENT PRIMARY KEY,
+  codigo VARCHAR(20) NOT NULL UNIQUE,
+  nome VARCHAR(50) NOT NULL,
+  peso_min_kg DECIMAL(10,3), peso_max_kg DECIMAL(10,3), constante_k DECIMAL(4,1)
+) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;
+
+CREATE TABLE IF NOT EXISTS raca (
+  id BIGINT AUTO_INCREMENT PRIMARY KEY,
+  especie_id BIGINT NOT NULL, nome VARCHAR(80) NOT NULL, mutacao_mdr1 TINYINT(1) NOT NULL DEFAULT 0,
+  FOREIGN KEY (especie_id) REFERENCES especie(id)
+) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;
+
+CREATE TABLE IF NOT EXISTS classe_terapeutica (
+  id BIGINT AUTO_INCREMENT PRIMARY KEY, nome VARCHAR(80) NOT NULL UNIQUE
+) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;
+
+CREATE TABLE IF NOT EXISTS farmaco (
+  id BIGINT AUTO_INCREMENT PRIMARY KEY,
+  principio_ativo VARCHAR(120) NOT NULL, classe_id BIGINT NOT NULL,
+  mecanismo VARCHAR(500), indicacoes VARCHAR(500), fonte VARCHAR(200), ativo TINYINT(1) NOT NULL DEFAULT 1,
+  FOREIGN KEY (classe_id) REFERENCES classe_terapeutica(id),
+  FULLTEXT KEY ft_farmaco (principio_ativo)
+) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;
+
+CREATE TABLE IF NOT EXISTS apresentacao (
+  id BIGINT AUTO_INCREMENT PRIMARY KEY, farmaco_id BIGINT NOT NULL, forma VARCHAR(100),
+  mg_por_ml DECIMAL(12,4), mg_por_comprimido DECIMAL(12,4), fracao_minima DECIMAL(4,2),
+  FOREIGN KEY (farmaco_id) REFERENCES farmaco(id)
+) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;
+
+CREATE TABLE IF NOT EXISTS posologia (
+  id BIGINT AUTO_INCREMENT PRIMARY KEY, farmaco_id BIGINT NOT NULL, especie_id BIGINT NOT NULL,
+  tipo ENUM('MG_KG','MG_M2','CRI') NOT NULL,
+  dose_min DECIMAL(12,4) NOT NULL, dose_max DECIMAL(12,4) NOT NULL,
+  unidade VARCHAR(20), via VARCHAR(20), frequencia VARCHAR(60), fonte VARCHAR(200),
+  FOREIGN KEY (farmaco_id) REFERENCES farmaco(id), FOREIGN KEY (especie_id) REFERENCES especie(id)
+) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;
+
+CREATE TABLE IF NOT EXISTS contraindicacao (
+  id BIGINT AUTO_INCREMENT PRIMARY KEY, farmaco_id BIGINT NOT NULL, especie_id BIGINT NOT NULL, raca_id BIGINT NULL,
+  gravidade ENUM('BLOQUEIO','CONTRAINDICADO','CAUTELA') NOT NULL, justificativa VARCHAR(500) NOT NULL,
+  FOREIGN KEY (farmaco_id) REFERENCES farmaco(id), FOREIGN KEY (especie_id) REFERENCES especie(id),
+  FOREIGN KEY (raca_id) REFERENCES raca(id)
+) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;
+
+CREATE TABLE IF NOT EXISTS interacao (
+  id BIGINT AUTO_INCREMENT PRIMARY KEY, farmaco_a_id BIGINT NOT NULL, farmaco_b_id BIGINT NOT NULL,
+  descricao VARCHAR(500), gravidade ENUM('BLOQUEIO','CONTRAINDICADO','CAUTELA'),
+  FOREIGN KEY (farmaco_a_id) REFERENCES farmaco(id), FOREIGN KEY (farmaco_b_id) REFERENCES farmaco(id)
+) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;
